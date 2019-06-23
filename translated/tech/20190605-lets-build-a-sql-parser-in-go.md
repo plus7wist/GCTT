@@ -2,7 +2,7 @@
 
 ## 摘要
 
-本文旨在对如何用 Go 语言构建 [LL(1) 文法的解析器](https://en.wikipedia.org/wiki/LL_parser)——此例用来解析 SQL 请求——作出简要的介绍。只需要读者具有极少的编程能力（函数、结构体、条件语句和 for 循环）。
+本文旨在对如何用 Go 语言构建 [LL(1) 文法的解析器](https://en.wikipedia.org/wiki/LL_parser)——此例用来解析 SQL 请求——作出简要的介绍。阅读本文只要求读者具有很少的编程能力（函数、结构体、条件语句和 for 循环）。
 
 如果你想直接跳过文章直接看结果，这里是完成后的解析器代码仓库：
 
@@ -10,24 +10,24 @@
 
 ## 为了简化而放弃的内容
 
-我们不会实现一些 SQL 中的复杂特性，包括子选择、函数、复杂的嵌套表达式等。但是这些特性都可以很快使用我们的策略来实现。
+我们不会实现一些 SQL 中的复杂特性，包括子选择、函数、复杂的嵌套表达式等。但是这些特性都可以很快地使用我们的策略来实现。
 
 ## 简要的理论介绍
 
 一个语法分析器由两部分组成：
 
-1. 语法分析器，也叫做''[记号切分器](https://en.wikipedia.org/wiki/Lexical_analysis#Tokenization)''。
+1. 词法分析器，也叫做“[记号切分器](https://en.wikipedia.org/wiki/Lexical_analysis#Tokenization)”。
 2. 语法分析器，用来构建[抽象语法树](https://en.wikipedia.org/wiki/Abstract_syntax_tree)。
 
 ### 词法分析器
 
-我们用例子来定义，当我们说把下面的查询''切分成记号（token）''：
+我们用例子来下定义：当我们说把下面的查询“切分成记号（token）”：
 
 ```sql
 SELECT id, name FROM 'users.csv'
 ```
 
-实际上是要把当中的''记号''都提取出来。记号切分器处理的结果就像下面这样：
+实际上是要把当中的“记号”都提取出来。记号切分器处理的结果就像下面这样：
 
 ```go
 []string{"SELECT", "id", ",", "name", "FROM", "'users.csv'"}
@@ -54,12 +54,12 @@ query {
 ```go
 type parser struct {
   sql             string        // 待解析的查询
-  i               int           // 当前所在查询字符串中的位置
-  query           query.Query   // 将要构建的''查询结构体''
+  i               int           // 当前在查询字符串中的位置
+  query           query.Query   // 将要构建的“查询结构体”
   step            step          // 这是什么呢？往下看
 }
 
-// 主函数返回一个''查询结构体''或者一个错误
+// 主函数返回一个“查询结构体”或者一个错误
 func (p *parser) Parse() (query.Query, error) {}
 
 // 返回解析的下一个记号（token）
@@ -69,13 +69,13 @@ func (p *parser) peek() (string) {}
 func (p *parser) pop() (string) {}
 ```
 
-直觉上来说，在解析的过程中，我们要先''偷看''（peek）第一个记号。在基本的 SQL 语法中，只有少数几个合法的记号：`SELECT`、`UPDATE`、`DELETE` 等，任何其他内容都是错误的。这部分代码看起来是这样的：
+直觉上来说，在解析的过程中，我们要先“偷看”（peek）第一个记号。在基本的 SQL 语法中，只有少数几个合法的记号：`SELECT`、`UPDATE`、`DELETE` 等，任何其他内容都是错误的。这部分代码看起来是这样的：
 
-```django
+```go
 switch strings.ToUpper(parser.peek()) {
 
 case "SELECT":
-  parser.query.type = "SELECT" // 开始构建此类型''查询结构体''
+  parser.query.type = "SELECT" // 开始构建此类型“查询结构体”
   parser.pop()
   // TODO 继续 SELECT 查询的解析
 
@@ -90,7 +90,7 @@ default:
 }
 ```
 
-接下来主要就是把这些 `TODO` 和边界填完。然而，勤奋的读者很快就会发现，完成解析整个 `SELECT` 查询的过程中，代码会迅速变得混乱不堪。更不用说我们还有很多中查询要解析。所以，我们需要一些有益的结构（来避免这种事情发生）。
+接下来主要就是把这些 `TODO` 和边界填完。然而，勤奋的读者很快就会发现，完成解析整个 `SELECT` 查询的过程中，代码会迅速变得混乱不堪。更不用说我们还有很多种查询要解析。所以，我们需要建立一些有益处的数据结构（来避免这种事情发生）。
 
 ## 有限状态自动机
 
@@ -197,7 +197,7 @@ func (p *parser) peekWithLength() (string, int) {
 
 ## 最后的确认
 
-解析器可能在完成一整个查询之前就遇到了字符串末尾。所以最好实现一个 `parser.validata()` 函数，用来检查一下生成的''查询''结构体。这个函数在生成的查询不完整，或者还有其他错误的情况下返回一个错误对象（`error`）。
+解析器可能在完成一整个查询之前就遇到了字符串末尾。所以最好实现一个 `parser.validata()` 函数，用来检查一下生成的“查询”结构体。这个函数在生成的查询不完整，或者还有其他错误的情况下返回一个错误对象（`error`）。
 
 ## 测试
 
